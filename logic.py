@@ -67,7 +67,7 @@ def laplacian_matrix(nodes, edges, loops):
     # Laplacian is the degree matrix minus the adjacency matrix
     return degree_matrix - adj_matrix
 
-def calculate_eigenvectors(matrix):
-    """Calculate eigenvalues and eigenvectors."""
-    eigenvalues, eigenvectors = np.linalg.eig(matrix)
-    return eigenvalues, eigenvectors
+def calculate_eigen(matrix):
+    if not isinstance(matrix, np.ndarray) or len(matrix.shape) != 2:
+        raise ValueError(f"Input must be a 2D NumPy array. Got: {type(matrix)}, shape: {getattr(matrix, 'shape', None)}")
+    return np.linalg.eig(matrix)

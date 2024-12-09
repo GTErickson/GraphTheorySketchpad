@@ -1,6 +1,6 @@
 import pygame
 import sys
-from logic import calculate_components, calculate_degree, calculate_parallel_edge_offset, adjacency_matrix, laplacian_matrix, calculate_eigenvectors
+from logic import calculate_components, calculate_degree, calculate_parallel_edge_offset, adjacency_matrix, laplacian_matrix, calculate_eigen
 from style import LAUNCHER_HEIGHT, LAUNCHER_WIDTH, SKETCHPAD_HEIGHT, SKETCHPAD_WIDTH, BACKGROUND_COLOR, BUTTON_COLOR, TEXT_COLOR, NODE_COLOR, NODE_RADIUS, EDGE_COLOR, FONT_COLOR, font, COLOR_OPTIONS
 
 def draw_button(screen, text, x, y, width, height, color, text_color):
@@ -74,9 +74,8 @@ def sketchpad_window():
     selected_loop = None  # For displaying loop details and deleting
     dragging_node = None  # For dragging nodes
     node_colors = []  # List to store colors for each node
-    display_matrices = False  # Flag to control matrix display\
+    display_matrices = False  # Flag to control matrix display
     display_eigenvectors = False  # Flag to control eigenvector display
-
 
     running = True
     while running:
@@ -133,30 +132,47 @@ def sketchpad_window():
                     screen.blit(label, (10 + padding + j * column_width, y_offset + i * 25))
 
                 
-        # Display eigenvectors if the flag is set
+        # Display eigen if the flag is set
         if display_eigenvectors:
             adj_matrix = adjacency_matrix(nodes, edges, loops)
             laplacian_matrix_result = laplacian_matrix(nodes, edges, loops)
-            
-            # Eigenvectors for adjacency matrix
-            adj_eigenvalues, adj_eigenvectors = calculate_eigenvectors(adj_matrix)
-            y_offset = 130
-            label = font.render("Eigenvectors (Adjacency Matrix)", True, FONT_COLOR)
-            screen.blit(label, (10, y_offset - 20))
-            for i, eigenvector in enumerate(adj_eigenvectors.T):  # Transpose to iterate over columns
-                eigenvector_text = " ".join(f"{val:.2f}" for val in eigenvector)
-                label = font.render(f"Eigenvector {i+1}: {eigenvector_text}", True, FONT_COLOR)
-                screen.blit(label, (10, y_offset + i * 25))
-            
-            # Eigenvectors for Laplacian matrix
-            lap_eigenvalues, lap_eigenvectors = calculate_eigenvectors(laplacian_matrix_result)
-            y_offset += 25 + 25*(len(adj_eigenvectors))
-            label = font.render("Eigenvectors (Laplacian Matrix)", True, FONT_COLOR)
-            screen.blit(label, (10, y_offset - 20))
-            for i, eigenvector in enumerate(lap_eigenvectors.T):  # Transpose to iterate over columns
-                eigenvector_text = " ".join(f"{val:.2f}" for val in eigenvector)
-                label = font.render(f"Eigenvector {i+1}: {eigenvector_text}", True, FONT_COLOR)
-                screen.blit(label, (10, y_offset + i * 25))
+            matrices = [adj_matrix, laplacian_matrix_result]
+            labels = ["Adjacency Matrix", "Laplacian Matrix"]
+            y_offset = 110
+            step = 0
+            for matrix in matrices:
+                # Calculate eigenvalues and eigenvectors
+                    eigenvalues, eigenvectors = calculate_eigen(matrix)
+                    
+                    
+                    label = font.render(f"{labels[step]}:", True, FONT_COLOR)
+                    screen.blit(label, (10, y_offset))
+                    y_offset += 30  # Adjust spacing
+                    
+                    # Display eigenvalues
+                    label = font.render("Eigenvalues:", True, FONT_COLOR)
+                    screen.blit(label, (10, y_offset))
+                    eigen_text = ", ".join(f"{val:.2f}" for val in eigenvalues)
+                    label = font.render(eigen_text, True, FONT_COLOR)
+                    screen.blit(label, (10, y_offset + 25))
+                    
+                    y_offset += 50  # Adjust spacing
+                    
+                    # Display eigenvectors
+                    label = font.render("Eigenvectors:", True, FONT_COLOR)
+                    screen.blit(label, (10, y_offset))
+                    for i, vec in enumerate(eigenvectors.T):  # Transpose for column vectors
+                        vec_text = ", ".join(f"{val:.2f}" for val in vec)
+                        label = font.render(f"v{i+1}: {vec_text}", True, FONT_COLOR)
+                        screen.blit(label, (10, y_offset + (i + 1) * 25))
+                    
+                    y_offset += 25 * (len(matrix) + 1)  # Adjust spacing for next matrix
+                    
+                    if (step == 0):
+                        step = 1
+                    else:
+                        step = 0
+                        
 
         # Draw edges
         edge_groups = {}
